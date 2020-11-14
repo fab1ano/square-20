@@ -87,7 +87,6 @@ So, we just use these gadgets to set the registers to 0 and then jump to the one
 This leads to code execution!
 
 ## Exploit
-
 You can find the exploit in [`x.py`](./x.py).
 
 Just run it:
