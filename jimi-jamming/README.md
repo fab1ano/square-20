@@ -42,7 +42,7 @@ There is one limitation though: Every long of the first half of our input must e
 This is everything we need to know, to exploit this binary. So, what do we do? 
 Let's use rop gadgets from the `ROPJAIL` buffer to trigger a `execve` system call; And if necessary we can inject our own code (upto 10 bytes) into the `ROPJAIL` buffer.
 
-Luckily, [`ropper`](https://github.com/sashs/ropper) also can find rop gadgets in raw blobs.
+Luckily, [`ropper`](https://github.com/sashs/ropper) can find rop gadgets in raw blobs.
 Among other gadgets the `ROPJAIL` buffer contains the following (which we are all going to use):
 
 ```
